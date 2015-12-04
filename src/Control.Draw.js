@@ -3,7 +3,9 @@ L.Control.Draw = L.Control.extend({
 	options: {
 		position: 'topleft',
 		draw: {},
-		edit: false
+		edit: false,
+		containerClassName: 'leaflet-draw',
+		firstButtonClassName: 'leaflet-draw-toolbar-top'
 	},
 
 	initialize: function (options) {
@@ -39,9 +41,8 @@ L.Control.Draw = L.Control.extend({
 	},
 
 	onAdd: function (map) {
-		var container = L.DomUtil.create('div', 'leaflet-draw'),
+		var container = L.DomUtil.create('div', this.options.containerClassName),
 			addedTopClass = false,
-			topClassName = 'leaflet-draw-toolbar-top',
 			toolbarContainer;
 
 		for (var toolbarId in this._toolbars) {
@@ -51,8 +52,8 @@ L.Control.Draw = L.Control.extend({
 				if (toolbarContainer) {
 					// Add class to the first toolbar to remove the margin
 					if (!addedTopClass) {
-						if (!L.DomUtil.hasClass(toolbarContainer, topClassName)) {
-							L.DomUtil.addClass(toolbarContainer.childNodes[0], topClassName);
+						if (!L.DomUtil.hasClass(toolbarContainer, this.options.firstButtonClassName)) {
+							L.DomUtil.addClass(toolbarContainer.childNodes[0], this.options.firstButtonClassName);
 						}
 						addedTopClass = true;
 					}
