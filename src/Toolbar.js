@@ -6,6 +6,7 @@ L.Toolbar = L.Class.extend({
 		toolbarContainerClassName: 'leaflet-draw-section',
 		toolbarClassName: 'leaflet-draw-toolbar leaflet-bar',
 		toolbarClassNamePrefix: 'leaflet-draw-toolbar-',
+		toolbarEmptyClassName: 'leaflet-draw-toolbar-empty',
 		actionsClassName: 'leaflet-draw-actions',
 		actionsClassNamePrefix: 'leaflet-draw-actions-'
 	},
@@ -17,6 +18,9 @@ L.Toolbar = L.Class.extend({
 			},
 			css: function() {
 				return this.options.toolbarClassName;
+			},
+			empty: function() {
+				return this.options.toolbarEmptyClassName;
 			},
 			prefix: function(value) {
 				return this.options.toolbarClassNamePrefix + value;
@@ -63,26 +67,27 @@ L.Toolbar = L.Class.extend({
 		var container = L.DomUtil.create('div', this._css.toolbar.container()),
 			buttonIndex = 0,
 			modeHandlers = this.getModeHandlers(map),
+			type,
+			handler,
 			i;
 
 		this._toolbarContainer = L.DomUtil.create('div', this._css.toolbar.css());
 		this._map = map;
 
 		for (i = 0; i < modeHandlers.length; i++) {
-			if (modeHandlers[i].enabled) {
-				this._initModeHandler(
-					modeHandlers[i].handler,
-					this._toolbarContainer,
-					modeHandlers[i].className,
-					buttonIndex++,
-					modeHandlers[i].title
-				);
-			}
-		}
+			handler = modeHandlers[i].handler;
+			type = handler.type;
+			this._initModeHandler(
+				handler,
+				modeHandlers[i].available !== false,
+				this._toolbarContainer,
+				modeHandlers[i].className,
+				buttonIndex++,
+				modeHandlers[i].title
+			);
 
-		// if no buttons were added, do not add the toolbar
-		if (!buttonIndex) {
-			return;
+			map.on('draw:enable:' + type, handler.enable, handler);
+			map.on('draw:available:' + type, this._createAvailableCallback(type), this);
 		}
 
 		// Save button index of the last button, -1 as we would have ++ after the last button
@@ -95,27 +100,45 @@ L.Toolbar = L.Class.extend({
 		container.appendChild(this._toolbarContainer);
 		container.appendChild(this._actionsContainer);
 
+		// listen for redraw events
+		this.on('redraw', this._redraw, this);
+
 		return container;
 	},
 
-	removeToolbar: function () {
+	_createAvailableCallback: function(handlerId) {
+		return function() {
+			this._available(handlerId);
+		};
+	},
+
+	removeToolbar: function (map) {
+		var handler;
+
+		// stop listening for redraw events
+		this.off('redraw');
+
 		// Dispose each handler
 		for (var handlerId in this._modes) {
 			if (this._modes.hasOwnProperty(handlerId)) {
+				handler = this._modes[handlerId].handler;
 				// Unbind handler button
 				this._disposeButton(
 					this._modes[handlerId].button,
-					this._modes[handlerId].handler.enable,
-					this._modes[handlerId].handler
+					handler.enable,
+					handler
 				);
 
 				// Make sure is disabled
-				this._modes[handlerId].handler.disable();
+				handler.disable();
+
+				// Remove map event
+				map.off('draw:enable:' + handlerId, handler.enable, handler);
+				map.off('draw:available:' + handlerId, null, this); // TODO: test that this does disable the event
 
 				// Unbind handler
-				this._modes[handlerId].handler
-					.off('enabled', this._handlerActivated, this)
-					.off('disabled', this._handlerDeactivated, this);
+				handler.off('enabled', this._handlerActivated, this);
+				handler.off('disabled', this._handlerDeactivated, this);
 			}
 		}
 		this._modes = {};
@@ -132,13 +155,13 @@ L.Toolbar = L.Class.extend({
 		this._actionsContainer = null;
 	},
 
-	_initModeHandler: function (handler, container, cssClassName, buttonIndex, buttonTitle) {
+	_initModeHandler: function (handler, available, container, cssClassName, buttonIndex, buttonTitle) {
 		var type = handler.type;
 
 		this._modes[type] = {};
-
 		this._modes[type].handler = handler;
-
+		this._modes[type].available = available;
+		this._modes[type].cssClassName = cssClassName;
 		this._modes[type].button = this._createButton({
 			type: type,
 			title: buttonTitle,
@@ -146,9 +169,9 @@ L.Toolbar = L.Class.extend({
 			callback: this._modes[type].handler.enable,
 			context: this._modes[type].handler,
 			cssClassName: cssClassName,
-			type: type
+			type: type,
+			style: 'button'
 		});
-
 		this._modes[type].buttonIndex = buttonIndex;
 
 		this._modes[type].handler
@@ -156,8 +179,41 @@ L.Toolbar = L.Class.extend({
 			.on('disabled', this._handlerDeactivated, this);
 	},
 
+	_redraw: function(options) {
+		var available;
+
+		if (options.handlers) {
+			for (var handlerId in options.handlers) {
+				if (this._modes.hasOwnProperty(handlerId) && options.handlers.hasOwnProperty(handlerId)) {
+					available = options.handlers[handlerId].available !== false;
+					this._modes[handlerId].available = available;
+				}
+			}
+		}
+
+		this._redrawButtons();
+	},
+
+	_redrawButtons: function() {
+		var button,
+			buttonCssClassName;
+
+		for (var handlerId in this._modes) {
+			if (this._modes.hasOwnProperty(handlerId)) {
+				button = this._modes[handlerId].button;
+				if (button) {
+					buttonCssClassName = this._createButtonCssClasses({
+						cssClassName: this._modes[handlerId].cssClassName,
+						type: handlerId
+					});
+					button.className = buttonCssClassName;
+				}
+			}
+		}
+	},
+
 	_createButton: function (options) {
-		var buttonCssClasses = this._css.button.prefix(options.type) + (options.cssClassName ? ' ' + options.cssClassName : ''),
+		var buttonCssClasses = this._createButtonCssClasses(options),
 			link = L.DomUtil.create('a', buttonCssClasses, options.container);
 		link.href = '#';
 
@@ -174,14 +230,44 @@ L.Toolbar = L.Class.extend({
 			.on(link, 'mousedown', L.DomEvent.stopPropagation)
 			.on(link, 'dblclick', L.DomEvent.stopPropagation)
 			.on(link, 'click', L.DomEvent.preventDefault)
-			.on(link, 'click', options.callback, options.context);
-			// .on(link, 'click', function() {
-			// 	options.callback.apply(options.context, {
-			// 		link: link
-			// 	});
-			// });
+			.on(link, 'click', function() {
+				this._checkAvailabilityExecuteCallback(options);
+			}, this);
 
 		return link;
+	},
+
+	_createButtonCssClasses: function (options) {
+		var cssClass = this._css.button.prefix(options.type);
+		if (this._checkAvailability(options.style, options.type)) {
+			cssClass += ' ' + this._css.button.prefix('available');
+		} else {
+			cssClass += ' ' + this._css.button.prefix('unavailable');
+		}
+		if (options.cssClassName) {
+			cssClass += ' ' + options.cssClassName;
+		}
+
+		return cssClass;
+	},
+
+	_available: function(handlerId) {
+		if (this._modes[handlerId]) {
+			this._modes[handlerId].available = true;
+			this._redrawButtons();
+		}
+	},
+
+	_checkAvailabilityExecuteCallback: function(options) {
+		if (this._checkAvailability(options.style, options.type)) {
+			if (options.callback) {
+				options.callback.apply(options.context);
+			}
+		}
+	},
+
+	_checkAvailability: function(handlerType, handlerId) {
+		return handlerType === 'action' || (this._modes[handlerId] && this._modes[handlerId].available);
 	},
 
 	_disposeButton: function (button, callback) {
@@ -250,7 +336,8 @@ L.Toolbar = L.Class.extend({
 				container: li,
 				callback: buttons[i].callback,
 				context: buttons[i].context,
-				type: buttonAction
+				type: buttonAction,
+				style: 'action'
 			});
 
 			this._actionButtons.push({

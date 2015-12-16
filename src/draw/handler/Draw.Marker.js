@@ -9,13 +9,6 @@ L.Draw.Marker = L.Draw.Feature.extend({
 		zIndexOffset: 2000 // This should be > than the highest z-index any markers
 	},
 
-	initialize: function (map, options) {
-		// Save the type so super can fire, need to do this as cannot do this.TYPE :(
-		this.type = L.Draw.Marker.TYPE;
-
-		L.Draw.Feature.prototype.initialize.call(this, map, options);
-	},
-
 	addHooks: function () {
 		L.Draw.Feature.prototype.addHooks.call(this);
 
@@ -89,7 +82,8 @@ L.Draw.Marker = L.Draw.Feature.extend({
 	},
 
 	_onClick: function () {
-		this._fireCreatedEvent();
+		var latlng = this._marker.getLatLng();
+		this._fireCreatedEvent(latlng);
 
 		this.disable();
 		if (this.options.repeatMode) {
@@ -103,8 +97,8 @@ L.Draw.Marker = L.Draw.Feature.extend({
 		this._onClick(); // permanently places marker & ends interaction
 	},
 
-	_fireCreatedEvent: function () {
-		var marker = new L.Marker.Touch(this._marker.getLatLng(), { icon: this.options.icon });
+	_fireCreatedEvent: function (latlng) {
+		var marker = new L.Marker.Touch(latlng, { icon: this.options.icon });
 		L.Draw.Feature.prototype._fireCreatedEvent.call(this, marker);
 	}
 });
