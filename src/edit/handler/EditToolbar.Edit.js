@@ -111,11 +111,17 @@ L.EditToolbar.Edit = L.Handler.extend({
 				layer.edited = false;
 			}
 		});
+	},
 
-		return {
-			map: this._map,
-			layers: editedLayers
-		};
+	getChanges: function () {
+		var editedLayers = new L.LayerGroup();
+		this._featureGroup.eachLayer(function (layer) {
+			if (layer.edited) {
+				editedLayers.addLayer(layer);
+			}
+		});
+
+		return editedLayers;
 	},
 
 	_backupLayer: function (layer) {
