@@ -111,7 +111,11 @@ L.EditToolbar.Edit = L.Handler.extend({
 				layer.edited = false;
 			}
 		});
-		this._map.fire('draw:edited', {layers: editedLayers});
+
+		return {
+			map: this._map,
+			layers: editedLayers
+		};
 	},
 
 	_backupLayer: function (layer) {

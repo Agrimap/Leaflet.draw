@@ -113,11 +113,18 @@ L.EditToolbar = L.Toolbar.extend({
 		this._activeMode.handler.revertLayers();
 
 		L.Toolbar.prototype.disable.call(this);
+
+		editedLayers.map.fire('draw:edit-cancelled');
 	},
 
 	_save: function () {
-		this._activeMode.handler.save();
-		this._activeMode.handler.disable();
+		var handler = this._activeMode.handler,
+			editedLayers;
+
+		editedLayers = handler.save();
+		handler.disable();
+
+		editedLayers.map.fire('draw:edited', { layers: editedLayers.layers });
 	},
 
 	_checkDisabled: function () {
