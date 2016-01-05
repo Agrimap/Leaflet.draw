@@ -21,10 +21,20 @@ L.EditToolbar.Delete = L.Handler.extend({
 		this.type = L.EditToolbar.Delete.TYPE;
 	},
 
-	enable: function () {
+	destroy: function() {
+		this._featureGroup = null;
+		this.options.featureGroup = null;
+	},
+
+	enable: function (options) {
 		if (this._enabled || !this._hasAvailableLayers()) {
 			return;
 		}
+
+		if (options && options.options) {
+			L.setOptions(this, options.options);
+		}
+
 		this.fire('enabled', { handler: this.type});
 
 		this._map.fire('draw:deletestart', { handler: this.type });

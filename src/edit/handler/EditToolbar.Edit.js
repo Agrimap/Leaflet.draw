@@ -23,30 +23,47 @@ L.EditToolbar.Edit = L.Handler.extend({
 		this.type = L.EditToolbar.Edit.TYPE;
 	},
 
-	enable: function () {
+	destroy: function() {
+		this._featureGroup = null;
+		this.options.featureGroup = null;
+	},
+
+	enable: function (options) {
 		if (this._enabled || !this._hasAvailableLayers()) {
 			return;
 		}
-		this.fire('enabled', {handler: this.type});
-			//this disable other handlers
 
+		if (options && options.options) {
+			L.setOptions(this, options.options);
+		}
+
+		// this disables other handlers
+		this.fire('enabled', {handler: this.type});
+
+		// allow drawLayer to be updated before beginning edition.
 		this._map.fire('draw:editstart', { handler: this.type });
-			//allow drawLayer to be updated before beginning edition.
 
 		L.Handler.prototype.enable.call(this);
+
 		this._featureGroup
 			.on('layeradd', this._enableLayerEdit, this)
 			.on('layerremove', this._disableLayerEdit, this);
 	},
 
 	disable: function () {
-		if (!this._enabled) { return; }
+		if (!this._enabled) {
+			return;
+		}
 		this._featureGroup
 			.off('layeradd', this._enableLayerEdit, this)
 			.off('layerremove', this._disableLayerEdit, this);
+
 		L.Handler.prototype.disable.call(this);
+
 		this._map.fire('draw:editstop', { handler: this.type });
 		this.fire('disabled', {handler: this.type});
+
+		this.options.layer = null;
 	},
 
 	addHooks: function () {
@@ -55,7 +72,11 @@ L.EditToolbar.Edit = L.Handler.extend({
 		if (map) {
 			map.getContainer().focus();
 
-			this._featureGroup.eachLayer(this._enableLayerEdit, this);
+			if (this.options.layer) {
+				this._enableLayerEdit(this.options.layer);
+			} else {
+				this._featureGroup.eachLayer(this._enableLayerEdit, this);
+			}
 
 			this._tooltip = new L.Tooltip(this._map, this.options.tooltip);
 			this._tooltip.updateContent({
