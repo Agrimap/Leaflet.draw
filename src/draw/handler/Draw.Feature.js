@@ -21,8 +21,12 @@ L.Draw.Feature = L.Handler.extend({
 		L.setOptions(this, options);
 	},
 
-	enable: function () {
+	enable: function (options) {
 		if (this._enabled) { return; }
+
+		if (options && options.options) {
+			L.setOptions(this, options.options);
+		}
 
 		L.Handler.prototype.enable.call(this);
 
