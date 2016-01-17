@@ -117,7 +117,11 @@ L.Toolbar = L.Class.extend({
 		var all = handlers.type === 'draw:available:all';
 		for (var handlerId in this._modes) {
 			if (this._modes.hasOwnProperty(handlerId) && (all || handlers.hasOwnProperty(handlerId))) {
-				this._available(handlerId, handlers[handlerId]);
+				if (handlers[handlerId]) {
+					this._available(handlerId, handlers[handlerId]);
+				} else {
+					this._unavailable(handlerId, handlers[handlerId]);
+				}
 			}
 		}
 	},
