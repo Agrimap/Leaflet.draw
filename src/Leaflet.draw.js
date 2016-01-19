@@ -83,7 +83,7 @@ L.drawLocal = {
 			buttons: {
 				edit: 'Edit layers',
 				editDisabled: 'No layers to edit',
-				remove: 'Delete layers.x',
+				remove: 'Delete layers.',
 				removeDisabled: 'No layers to delete'
 			}
 		},
