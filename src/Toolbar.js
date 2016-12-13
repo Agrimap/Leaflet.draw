@@ -43,7 +43,7 @@
  *      });
  * ```
  */
-L.Draw.Toolbar = L.Class.extend({
+L.Toolbar = L.Class.extend({
 	includes: [L.Mixin.Events],
 
 	options: {
@@ -133,17 +133,15 @@ L.Draw.Toolbar = L.Class.extend({
 
 		for (i = 0; i < modeHandlers.length; i++) {
 			handler = modeHandlers[i].handler;
-			if (modeHandlers[i].enabled) {
-				type = handler.type;
-				this._initModeHandler(
-					handler,
-					modeHandlers[i].available !== false,
-					this._toolbarContainer,
-					modeHandlers[i].className,
-					buttonIndex++,
-					modeHandlers[i].title
-				);
-			}
+			type = handler.type;
+			this._initModeHandler(
+				handler,
+				modeHandlers[i].available !== false,
+				this._toolbarContainer,
+				modeHandlers[i].className,
+				buttonIndex++,
+				modeHandlers[i].title
+			);
 			map.on('draw:enable:' + type, handler.enable, handler);
 			map.on('draw:available:' + type, this._createAvailableCallback(type), this);
 		}
