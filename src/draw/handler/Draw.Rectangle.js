@@ -9,6 +9,7 @@ L.Draw.Rectangle = L.Draw.SimpleShape.extend({
 	},
 
 	options: {
+		dragShape: false,
 		shapeOptions: {
 			stroke: true,
 			color: '#f06eaa',
@@ -53,7 +54,7 @@ L.Draw.Rectangle = L.Draw.SimpleShape.extend({
 		if (shape) {
 			latLngs = this._shape._defaultShape ? this._shape._defaultShape() : this._shape.getLatLngs();
 			area = L.GeometryUtil.geodesicArea(latLngs);
-			subtext = showArea ? L.GeometryUtil.readableArea(area, this.options.metric) : ''
+			subtext = showArea ? L.GeometryUtil.readableArea(area, this.options.metric) : '';
 		}
 
 		return {

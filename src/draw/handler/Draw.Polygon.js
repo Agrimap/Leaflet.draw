@@ -20,7 +20,7 @@ L.Draw.Polygon = L.Draw.Polyline.extend({
 			fill: true,
 			fillColor: null, //same as color by default
 			fillOpacity: 0.2,
-			clickable: false
+			clickable: true
 		},
 		metric: true // Whether to use the metric measurement system or imperial
 	},
