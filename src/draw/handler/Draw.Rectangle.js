@@ -19,7 +19,7 @@ L.Draw.Rectangle = L.Draw.SimpleShape.extend({
 			fillColor: null, //same as color by default
 			fillOpacity: 0.2,
 			showArea: true,
-			clickable: false
+			clickable: true
 		},
 		metric: true // Whether to use the metric measurement system or imperial
 	},

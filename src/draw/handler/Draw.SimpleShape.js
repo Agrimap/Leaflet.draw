@@ -58,10 +58,10 @@ L.Draw.SimpleShape = L.Draw.Feature.extend({
 				.off('touchstart', this._onMouseDown, this)
 				.off('touchmove', this._onMouseMove, this);
 
-			if (this.options.dragShape) {
+			// if (this.options.dragShape) {
 				L.DomEvent.off(document, 'mouseup', this._onMouseUp, this);
 				L.DomEvent.off(document, 'touchend', this._onMouseUp, this);
-			}
+			// }
 
 			// If the box element doesn't exist they must not have moved the mouse, so don't need to destroy/return
 			if (this._shape) {
@@ -79,21 +79,21 @@ L.Draw.SimpleShape = L.Draw.Feature.extend({
 	},
 
 	_onMouseDown: function (e) {
-		if (this.options.dragShape) {
+		// if (this.options.dragShape) {
 			this._isDrawing = true;
 			this._startLatLng = e.latlng;
 			L.DomEvent
 				.on(document, 'mouseup', this._onMouseUp, this)
 				.on(document, 'touchend', this._onMouseUp, this)
 				.preventDefault(e.originalEvent);
-		} else {
-			if (this._isDrawing) {
-				this._finishShape();
-			} else {
-				this._isDrawing = true;
-				this._startLatLng = e.latlng;
-			}
-		}
+		// } else {
+		// 	if (this._isDrawing) {
+		// 		this._finishShape();
+		// 	} else {
+		// 		this._isDrawing = true;
+		// 		this._startLatLng = e.latlng;
+		// 	}
+		// }
 	},
 
 	_onMouseMove: function (e) {
