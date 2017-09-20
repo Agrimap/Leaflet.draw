@@ -29,7 +29,7 @@ L.Draw.Polyline = L.Draw.Feature.extend({
 		maxGuideLineLength: 4000,
 		shapeOptions: {
 			stroke: true,
-			color: '#3388ff',
+			color: '#f06eaa',
 			weight: 4,
 			opacity: 0.5,
 			fill: false,
@@ -212,6 +212,12 @@ L.Draw.Polyline = L.Draw.Feature.extend({
 	_finishShape: function () {
 		var latlngs = this._poly._defaultShape ? this._poly._defaultShape() : this._poly.getLatLngs();
 		var intersects = this._poly.newLatLngIntersects(latlngs[latlngs.length - 1]);
+		var lastMarker = this._markers[this._markers.length - 1];
+
+		// debounce
+		if (lastMarker.createTimestamp > Date.now() - 500) {
+			return;
+		}
 
 		if ((!this.options.allowIntersection && intersects) || !this._shapeIsValid()) {
 			this._showErrorTooltip();
@@ -365,6 +371,7 @@ L.Draw.Polyline = L.Draw.Feature.extend({
 		var markerCount = this._markers.length;
 		// The last marker should have a click handler to close the polyline
 		if (markerCount > 1) {
+			this._markers[markerCount - 1].createTimestamp = Date.now();
 			this._markers[markerCount - 1].on('click', this._finishShape, this);
 		}
 
