@@ -15,7 +15,7 @@ L.Draw.Polygon = L.Draw.Polyline.extend({
 		showLength: false,
 		shapeOptions: {
 			stroke: true,
-			color: '#3388ff',
+			color: '#f06eaa',
 			weight: 4,
 			opacity: 0.5,
 			fill: true,

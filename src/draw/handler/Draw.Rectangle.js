@@ -9,9 +9,10 @@ L.Draw.Rectangle = L.Draw.SimpleShape.extend({
 	},
 
 	options: {
+		dragShape: false,
 		shapeOptions: {
 			stroke: true,
-			color: '#3388ff',
+			color: '#f06eaa',
 			weight: 4,
 			opacity: 0.5,
 			fill: true,
@@ -25,9 +26,6 @@ L.Draw.Rectangle = L.Draw.SimpleShape.extend({
 
 	// @method initialize(): void
 	initialize: function (map, options) {
-		// Save the type so super can fire, need to do this as cannot do this.TYPE :(
-		this.type = L.Draw.Rectangle.TYPE;
-
 		this._initialLabelText = L.drawLocal.draw.handlers.rectangle.tooltip.start;
 
 		L.Draw.SimpleShape.prototype.initialize.call(this, map, options);
@@ -80,7 +78,7 @@ L.Draw.Rectangle = L.Draw.SimpleShape.extend({
 		if (shape) {
 			latLngs = this._shape._defaultShape ? this._shape._defaultShape() : this._shape.getLatLngs();
 			area = L.GeometryUtil.geodesicArea(latLngs);
-			subtext = showArea ? L.GeometryUtil.readableArea(area, this.options.metric) : ''
+			subtext = showArea ? L.GeometryUtil.readableArea(area, this.options.metric) : '';
 		}
 
 		return {

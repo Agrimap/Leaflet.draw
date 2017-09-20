@@ -1,0 +1,1 @@
+jake build[3v,custom] && cp dist/leaflet.draw-custom-src.js ~/repos/360-source/app/webroot/js/libs/core/leafletdraw.js &&  cp dist/leaflet.draw-custom.js ~/repos/360-source/app/webroot/js/libs/core/leafletdraw-min.js
