@@ -319,6 +319,7 @@ L.Toolbar = L.Class.extend({
 
 		var buttonCssClasses = this._createButtonCssClasses(options),
 			link = L.DomUtil.create('a', buttonCssClasses, options.container);
+
 		link.href = '#';
 		link.appendChild(sr);
 
@@ -339,10 +340,14 @@ L.Toolbar = L.Class.extend({
 			.on(link, 'click', L.DomEvent.stopPropagation)
 			.on(link, 'mousedown', L.DomEvent.stopPropagation)
 			.on(link, 'dblclick', L.DomEvent.stopPropagation)
-			.on(link, buttonEvent, L.DomEvent.stopPropagation)
-			.on(link, 'click', L.DomEvent.preventDefault)
-			.on(link, 'click', function() {
+			.on(link, 'touchstart', L.DomEvent.stopPropagation)
+			.on(link, 'click', L.DomEvent.stopPropagation)
+			.on(link, buttonEvent, function(e) {
+				e.preventDefault();
+  				e.stopPropagation();
 				this._checkAvailabilityExecuteCallback(options);
+
+				return false;
 			}, this);
 
 		return link;
@@ -405,8 +410,9 @@ L.Toolbar = L.Class.extend({
 			.off(button, 'dblclick', L.DomEvent.stopPropagation)
 			.off(button, 'touchstart', L.DomEvent.stopPropagation)
 			.off(button, 'click', L.DomEvent.preventDefault);
+		
 		if (callback) {
-			L.DomEvent.off(button, 'click', callback);
+			L.DomEvent.off(button, buttonEvent, callback);
 		}
 	},
 
